@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>HIIT 20 分鐘計時器 — 重建版</title><style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,sans-serif;background:#101a1a;color:#eff5e9}*{box-sizing:border-box}body{margin:0;padding:24px 16px}main{max-width:680px;margin:auto}header{display:flex;justify-content:space-between;align-items:center}h1{font-size:24px}small,.muted{color:#abbeb5}.card{background:#1c2b29;border:1px solid #3a504a;border-radius:24px;padding:24px;margin:18px 0}.timer{text-align:center}#clock{font-size:clamp(80px,22vw,128px);font-weight:750;line-height:1.2;font-variant-numeric:tabular-nums}#activity{font-size:28px;margin:8px}#phase{color:#c7ef79;font-weight:700}progress{width:100%;height:12px;accent-color:#c7ef79}.row{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}button,select,input{font:inherit}button,select,input[type=text]{min-height:48px;border-radius:12px;border:1px solid #52645c;background:#293d36;color:#fff;padding:10px 14px}button{cursor:pointer;flex:1}button.primary{background:#c7ef79;color:#152018;font-weight:750}button:disabled{opacity:.45;cursor:default}label{display:flex;align-items:center;gap:8px}select{max-width:100%}.selectors label{flex:1;min-width:130px;display:grid}.settings{display:grid;gap:14px}.settings input[type=text]{width:100%}summary{cursor:pointer;min-height:36px}.notice{font-size:14px;line-height:1.7;color:#c2cfc7}#wakeStatus,#audioStatus{overflow-wrap:anywhere}button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid #c7ef79;outline-offset:3px}
+
+</style></head><body>
+<main>
+<header><h1>HIIT / 20 分鐘</h1><small>需求重建版 · v1.0</small></header>
+<p class="notice">5 組 × 4 輪 · 運動 30 秒／休息 30 秒。動作清單為暫定，可於下方修改。</p>
+<section class="card timer">
+<div id="phase">準備開始</div><h2 id="activity">蛙跳</h2><div id="clock" role="timer" aria-label="本階段剩餘秒數">30</div>
+<p id="position">第 1 組 · 第 1 / 4 輪</p><progress id="progress" max="1200000" value="0" aria-label="整體進度"></progress>
+<p>課表剩餘 <strong id="total">20:00</strong></p>
+<div class="row"><button id="start" class="primary">▶ 開始</button><button id="pause" disabled>暫停</button><button id="reset">重置</button></div>
+<p id="status" role="status">尚未開始</p>
+</section>
+<section class="card"><h2>切換位置</h2>
+<div class="row selectors"><label>動作<select id="exercise"></select></label><label>輪次<select id="round"><option value="0">第 1 輪</option><option value="1">第 2 輪</option><option value="2">第 3 輪</option><option value="3">第 4 輪</option></select></label><label>階段<select id="segment"><option value="0">運動</option><option value="1">休息／靜態深蹲</option></select></label></div>
+<div class="row"><button id="previous">◀ 上一輪</button><button id="next">下一輪 ▶</button></div><button id="jump">切換至選定位置</button><p class="notice">切換後從該階段 30 秒開始；保留正在播放或暫停狀態。剩餘時間依課表位置重算。</p></section>
+<section class="card settings"><label><input id="voice" type="checkbox" checked>中文語音提示</label><label><input id="music" type="checkbox" checked>合成背景節奏（128 BPM）</label><label>節奏音量<input id="volume" type="range" min="0" max="100" value="35"></label><label><input id="wake" type="checkbox" checked>運動時嘗試保持螢幕開啟</label><p class="notice" id="audioStatus">音訊等待開始操作</p><p class="notice" id="wakeStatus" role="status">常亮尚未啟用；不能保證 iPhone ChatGPT 不鎖屏。</p>
+<details><summary>編輯暫定動作清單</summary><p class="notice">舊版截圖確認第一組蛙跳；深蹲順序暫列第二組。其餘名稱待原碼取回，可修改。本次修改不跨重新載入保存。</p><div id="names" class="settings"></div><button id="saveNames">套用名稱</button></details></section>
+<p class="notice">深蹲的休息階段改為「靜態深蹲」。切到背景會自動暫停，返回後請手動繼續。HTML 檔案預覽不等於可執行的 ChatGPT 互動環境。</p>
+<noscript>此環境未啟用 JavaScript，計時器無法運作。請在可執行 JavaScript 的環境開啟。</noscript>
+</main>
+
+<script>
+/* Reconstructed 2026-11-06. Not recovered original source. */
+(function (root) {
+  'use strict';
+  const DURATION = 30000, COUNT = 40, TOTAL = DURATION * COUNT;
+  class Timer {
+    constructor() { this.reset(); }
+    reset() { this.elapsed = 0; this.running = false; this.anchor = 0; }
+    value(now) { return Math.min(TOTAL, this.elapsed + (this.running ? Math.max(0, now - this.anchor) : 0)); }
+    start(now) { if (this.running || this.elapsed >= TOTAL) return; this.anchor = now; this.running = true; }
+    pause(now) { this.elapsed = this.value(now); this.running = false; }
+    seek(exercise, round, phase, now) {
+      if (![exercise, round, phase].every(Number.isInteger) || exercise < 0 || exercise > 4 || round < 0 || round > 3 || phase < 0 || phase > 1) throw new RangeError('Invalid position');
+      this.elapsed = ((exercise * 4 + round) * 2 + phase) * DURATION;
+      this.anchor = now;
+    }
+    snapshot(now) {
+      const elapsed = this.value(now), done = elapsed >= TOTAL;
+      const segment = Math.min(COUNT - 1, Math.floor(elapsed / DURATION));
+      return { elapsed, done, segment, exercise: Math.floor(segment / 8), round: Math.floor(segment / 2) % 4,
+        phase: segment % 2, remaining: done ? 0 : Math.ceil((DURATION - elapsed % DURATION) / 1000),
+        totalRemaining: Math.ceil((TOTAL - elapsed) / 1000) };
+    }
+  }
+  const api = { Timer, DURATION, TOTAL, COUNT };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  else root.HiitCore = api;
+})(globalThis);
+
+/* Browser adapter; audio and wake-lock failures must never block timing. */
+'use strict';
+const $ = id => document.getElementById(id);
+const timer = new HiitCore.Timer();
+const names = ['蛙跳', '深蹲', '動作 3（待取回）', '動作 4（待取回）', '動作 5（待取回）'];
+let lastSegment = -1, lastCount = -1, context, beat = 0, nextBeat = 0;
+let wakeLock = null, wakePending = false, wakeEpoch = 0;
+const now = () => performance.now();
+function refreshNames() {
+  const selected = $('exercise').value || '0';
+  $('exercise').replaceChildren(...names.map((name, i) => { const o = document.createElement('option'); o.value = i; o.textContent = name; return o; }));
+  $('exercise').value = selected;
+}
+refreshNames();
+names.forEach((name, i) => {
+  const label = document.createElement('label'); label.textContent = `第 ${i + 1} 組`;
+  const input = document.createElement('input'); input.type = 'text'; input.value = name; input.id = `name${i}`; input.maxLength = 32; input.disabled = i <= 1;
+  label.append(input); $('names').append(label);
+});
+function say(text) {
+  if (!$('voice').checked || !('speechSynthesis' in window)) return;
+  try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = 'zh-TW'; u.rate = 1.05; speechSynthesis.speak(u); } catch (_) { $('audioStatus').textContent = '語音不可用；計時照常運作'; }
+}
+function cancelVoice() { try { window.speechSynthesis?.cancel(); } catch (_) {} }
+function unlockAudio() {
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) { $('audioStatus').textContent = '不支援合成節奏；計時照常運作'; return; }
+    context ||= new AC();
+    context.resume().then(() => { $('audioStatus').textContent = context.state === 'running' ? '音訊已就緒；語音依系統支援' : '音訊受限；請再次按開始'; }).catch(() => { $('audioStatus').textContent = '音訊啟用失敗；計時照常運作'; });
+    nextBeat = 0;
+  } catch (_) { $('audioStatus').textContent = '音訊不可用；計時照常運作'; }
+}
+function tone(freq, duration, volume) {
+  if (!context || context.state !== 'running') return;
+  const osc = context.createOscillator(), gain = context.createGain(), t = context.currentTime;
+  osc.frequency.setValueAtTime(freq, t); osc.frequency.exponentialRampToValueAtTime(freq / 2, t + duration);
+  gain.gain.setValueAtTime(Math.max(.0001, volume), t); gain.gain.exponentialRampToValueAtTime(.0001, t + duration);
+  osc.connect(gain); gain.connect(context.destination); osc.start(t); osc.stop(t + duration);
+  osc.onended = () => { osc.disconnect(); gain.disconnect(); };
+}
+function rhythm() {
+  if (!timer.running || !$('music').checked || !context || context.state !== 'running') return;
+  if (context.currentTime >= nextBeat) { tone(beat++ % 4 === 0 ? 150 : 700, .10, Number($('volume').value) / 100 * .25); nextBeat = context.currentTime + 60 / 128; }
+}
+async function releaseWake() {
+  wakeEpoch++;
+  const old = wakeLock; wakeLock = null;
+  if (old) { try { await old.release(); } catch (_) {} }
+}
+async function acquireWake() {
+  if (!timer.running || !$('wake').checked || document.hidden || wakeLock || wakePending) return;
+  if (!window.isSecureContext || !navigator.wakeLock) { $('wakeStatus').textContent = '此環境不支援常亮或不是安全環境；計時照常運作'; return; }
+  wakePending = true; const epoch = wakeEpoch;
+  try {
+    const lock = await navigator.wakeLock.request('screen');
+    if (epoch !== wakeEpoch || !timer.running || !$('wake').checked || document.hidden) { await lock.release(); return; }
+    wakeLock = lock; $('wakeStatus').textContent = '已取得常亮請求；系統仍可能釋放';
+    lock.addEventListener('release', () => { if (wakeLock === lock) { wakeLock = null; $('wakeStatus').textContent = '常亮已被系統釋放；可暫停後繼續重試'; } });
+  } catch (e) { $('wakeStatus').textContent = `常亮未取得（${e.name || 'Error'}）；計時照常運作`; }
+  finally { wakePending = false; if (epoch !== wakeEpoch && timer.running && $('wake').checked && !document.hidden) void acquireWake(); }
+}
+function phaseText(s) { return s.phase ? (s.exercise === 1 ? '靜態深蹲' : '休息') : '運動'; }
+function stop(message) {
+  timer.pause(now()); cancelVoice(); void releaseWake();
+  $('wakeStatus').textContent = '常亮已停止'; $('status').textContent = message;
+}
+function render() {
+  const s = timer.snapshot(now());
+  if (s.done && timer.running) { stop('20 分鐘課表完成'); say('運動完成'); }
+  $('clock').textContent = s.remaining;
+  $('activity').textContent = s.done ? '完成！' : (s.phase && s.exercise === 1 ? '靜態深蹲' : names[s.exercise]);
+  $('phase').textContent = s.done ? '課表完成' : phaseText(s);
+  $('position').textContent = `第 ${s.exercise + 1} / 5 組 · 第 ${s.round + 1} / 4 輪`;
+  $('total').textContent = `${Math.floor(s.totalRemaining / 60).toString().padStart(2, '0')}:${(s.totalRemaining % 60).toString().padStart(2, '0')}`;
+  $('progress').value = s.elapsed; $('pause').disabled = !timer.running; $('start').disabled = timer.running || s.done;
+  $('start').textContent = s.elapsed ? '▶ 繼續' : '▶ 開始';
+  if (timer.running) {
+    if (lastSegment !== s.segment) { say(`${names[s.exercise]}，第${s.round + 1}輪，${phaseText(s)}`); lastSegment = s.segment; lastCount = -1; }
+    else if (s.remaining <= 3 && lastCount !== s.remaining) { say(String(s.remaining)); lastCount = s.remaining; }
+  }
+}
+$('start').onclick = () => { unlockAudio(); timer.start(now()); lastSegment = -1; $('status').textContent = '進行中'; void acquireWake(); render(); };
+$('pause').onclick = () => { stop('已暫停'); render(); };
+$('reset').onclick = () => { stop('已重置'); timer.reset(); lastSegment = -1; lastCount = -1; $('exercise').value = '0'; $('round').value = '0'; $('segment').value = '0'; render(); };
+$('jump').onclick = () => { cancelVoice(); timer.seek(Number($('exercise').value), Number($('round').value), Number($('segment').value), now()); lastSegment = -1; lastCount = -1; $('status').textContent = timer.running ? '已切換，繼續計時' : '已切換，等待開始'; render(); };
+$('voice').onchange = () => { if (!$('voice').checked) cancelVoice(); };
+$('music').onchange = () => { if ($('music').checked && timer.running) unlockAudio(); };
+$('wake').onchange = () => { if ($('wake').checked) void acquireWake(); else { void releaseWake(); $('wakeStatus').textContent = '常亮已關閉'; } };
+$('saveNames').onclick = () => { for (let i = 2; i < 5; i++) names[i] = $(`name${i}`).value.trim() || `動作 ${i + 1}（未命名）`; refreshNames(); lastSegment = -1; render(); };
+document.addEventListener('visibilitychange', () => { if (document.hidden && timer.running) { stop('畫面離開前景，已自動暫停；返回後請按繼續'); render(); } });
+window.addEventListener('pagehide', () => { stop('頁面離開，已暫停'); });
+setInterval(() => { render(); rhythm(); }, 100);
+render();
+
+function moveRound(delta) {
+  const s = timer.snapshot(now());
+  const target = Math.max(0, Math.min(19, s.exercise * 4 + s.round + delta));
+  $('exercise').value = String(Math.floor(target / 4)); $('round').value = String(target % 4); $('segment').value = '0'; $('jump').onclick();
+}
+$('previous').onclick = () => moveRound(-1);
+$('next').onclick = () => moveRound(1);
+
+</script></body></html>
