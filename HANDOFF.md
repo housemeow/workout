@@ -2,7 +2,7 @@
 
 ## 現在狀態
 
-使用者要延續「HIIT計時器設計」：`6ae14895-2c28-83e8-b0f2-a549d5930631`。目標仍是 iPhone ChatGPT 內使用，已於 2026-11-06 授權推送 https://github.com/housemeow/workout；未要求啟用 GitHub Pages。
+使用者要延續「HIIT計時器設計」：`6ae14895-2c28-83e8-b0f2-a549d5930631`。目標仍是 iPhone ChatGPT 內使用，已於 2026-11-06 授權推送 https://github.com/housemeow/workout；已要求啟用 GitHub Pages。
 
 本包提供完整可執行的需求重建程式碼。最後互動版本沒有取回原碼；工具只回傳文字與 `chatgpt-content-reference` 占位。已取得的五個對話回合見 docs/conversation-export.json，沒有下一頁游標。不可宣稱完整原碼還原。
 
@@ -10,7 +10,7 @@
 
 ## 不可丟失的需求
 
-5 組各 4 輪，30 秒運動／30 秒休息，含最後休息共 20 分鐘；深蹲休息改靜態深蹲；動作與輪次切換；語音；合成背景節奏；暫停與重置。不啟用 GitHub Pages；後續已授權推送儲存庫。
+5 組各 4 輪，30 秒運動／30 秒休息，含最後休息共 20 分鐘；深蹲休息改靜態深蹲；動作與輪次切換；語音；合成背景節奏；暫停與重置。後續已授權推送儲存庫並啟用 GitHub Pages。
 
 舊版截圖可證實第一組蛙跳、128 BPM、預設音量 35%、上一輪／下一輪。深蹲暫列第二組；3～5 組待取回，非原版資料。
 
@@ -38,4 +38,10 @@
 
 ## 儲存庫交接更新（2026-11-06）
 
-使用者後續明確要求推送至 https://github.com/housemeow/workout。先前「不部署 GitHub」限制已就程式碼推送更新；未啟用 GitHub Pages。歷史對話與來源證據保留原文。
+使用者後續明確要求推送至 https://github.com/housemeow/workout。先前「不部署 GitHub」限制已就程式碼推送更新；已依最新指示啟用 GitHub Pages。歷史對話與來源證據保留原文。
+
+## GitHub Pages（2026-11-06）
+
+網站入口：https://housemeow.github.io/workout/hiit.html
+
+使用者已明確授權架設 GitHub Pages，取代先前不部署的限制。main 推送後，`.github/workflows/pages.yml` 先測試，再執行 `python3 build.py`，只發布 `public/`。根目錄會導向相對路徑 `./hiit.html`；專案網址包含 `/workout/`。請勿把 `/hiit.html` 誤寫成網域根路徑。

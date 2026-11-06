@@ -5,3 +5,8 @@ html += (p/'src/style.css').read_text() + '\n</style></head><body>\n' + (p/'src/
 html += '\n<script>\n' + (p/'src/core.js').read_text() + '\n' + (p/'src/app.js').read_text() + '\n</script></body></html>\n'
 (p/'HIIT_20min_rebuilt.html').write_text(html)
 print('Built HIIT_20min_rebuilt.html')
+site = p / 'public'
+site.mkdir(exist_ok=True)
+(site / 'hiit.html').write_text(html)
+(site / 'index.html').write_text('<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=./hiit.html"><title>HIIT 計時器</title></head><body><a href="./hiit.html">開啟 HIIT 計時器</a></body></html>\n')
+print('Built public/hiit.html and public/index.html')

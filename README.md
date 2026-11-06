@@ -12,7 +12,7 @@
 4. 按開始，允許前景音訊。可暫停、繼續、重置、切換動作／輪次／階段，或按上一輪／下一輪。
 5. 新 session 上傳整包 ZIP，請先閱讀 `HANDOFF.md`。若平台不能讀 ZIP，解壓縮後附上 HTML、HANDOFF 與 docs。
 
-**下載 HTML 不代表能在 ChatGPT 檔案預覽執行。** 新 session 若有可執行的互動畫布，需把完整 HTML 載入該環境；是否允許 JavaScript、音訊與常亮，由宿主決定。本包未建立新的 ChatGPT 內嵌產物，已依後續指示推送 GitHub 儲存庫，但未啟用 GitHub Pages。
+**下載 HTML 不代表能在 ChatGPT 檔案預覽執行。** 新 session 若有可執行的互動畫布，需把完整 HTML 載入該環境；是否允許 JavaScript、音訊與常亮，由宿主決定。本包未建立新的 ChatGPT 內嵌產物，已依後續指示推送 GitHub 儲存庫，並依最新指示啟用 GitHub Pages。
 
 ## 已保留
 
@@ -63,4 +63,10 @@ node --test tests/*.test.cjs
 
 ## 儲存庫交接更新（2026-11-06）
 
-使用者後續明確要求推送至 https://github.com/housemeow/workout。先前「不部署 GitHub」限制已就程式碼推送更新；未啟用 GitHub Pages。歷史對話與來源證據保留原文。
+使用者後續明確要求推送至 https://github.com/housemeow/workout。先前「不部署 GitHub」限制已就程式碼推送更新；已依最新指示啟用 GitHub Pages。歷史對話與來源證據保留原文。
+
+## GitHub Pages（2026-11-06）
+
+網站入口：https://housemeow.github.io/workout/hiit.html
+
+使用者已明確授權架設 GitHub Pages，取代先前不部署的限制。main 推送後，`.github/workflows/pages.yml` 先測試，再執行 `python3 build.py`，只發布 `public/`。根目錄會導向相對路徑 `./hiit.html`；專案網址包含 `/workout/`。請勿把 `/hiit.html` 誤寫成網域根路徑。

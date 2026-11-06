@@ -24,3 +24,7 @@ Timer 儲存 elapsed（已累計毫秒）、anchor（本次開始的 performance
 - 安全輸出：名稱以 textContent 寫入，不插入 HTML。無儲存與網路呼叫。
 
 測試用 Node VM 與模擬 DOM 驗證事件流程；未使用或操作個人瀏覽器。
+
+## Pages 部署
+
+build.py 同時產生 public/hiit.html 與導向它的 public/index.html。GitHub Actions 在 main 推送時測試、建置，再上傳 public/ 為 Pages 產物；來源文件與對話證據不包含於網站產物。public/ 為忽略的建置輸出。
