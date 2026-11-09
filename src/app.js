@@ -2,7 +2,7 @@
 'use strict';
 const $ = id => document.getElementById(id);
 const timer = new HiitCore.Timer();
-const names = ['蛙跳', '深蹲', '動作 3（待取回）', '動作 4（待取回）', '動作 5（待取回）'];
+const names = ['蛙跳', '交互蹲跳', '波比跳', '伏地挺身', '深蹲'];
 let lastSegment = -1, lastCount = -1, context, beat = 0, nextBeat = 0;
 let wakeLock = null, wakePending = false, wakeEpoch = 0;
 const now = () => performance.now();
@@ -14,7 +14,7 @@ function refreshNames() {
 refreshNames();
 names.forEach((name, i) => {
   const label = document.createElement('label'); label.textContent = `第 ${i + 1} 組`;
-  const input = document.createElement('input'); input.type = 'text'; input.value = name; input.id = `name${i}`; input.maxLength = 32; input.disabled = i <= 1;
+  const input = document.createElement('input'); input.type = 'text'; input.value = name; input.id = `name${i}`; input.maxLength = 32; input.disabled = i === 4;
   label.append(input); $('names').append(label);
 });
 function say(text) {
@@ -60,7 +60,7 @@ async function acquireWake() {
   } catch (e) { $('wakeStatus').textContent = `常亮未取得（${e.name || 'Error'}）；計時照常運作`; }
   finally { wakePending = false; if (epoch !== wakeEpoch && timer.running && $('wake').checked && !document.hidden) void acquireWake(); }
 }
-function phaseText(s) { return s.phase ? (s.exercise === 1 ? '靜態深蹲' : '休息') : '運動'; }
+function phaseText(s) { return s.phase ? (s.exercise === 4 ? '繼續蹲著（靜態深蹲）' : '休息') : '運動'; }
 function stop(message) {
   timer.pause(now()); cancelVoice(); void releaseWake();
   $('wakeStatus').textContent = '常亮已停止'; $('status').textContent = message;
@@ -69,7 +69,7 @@ function render() {
   const s = timer.snapshot(now());
   if (s.done && timer.running) { stop('20 分鐘課表完成'); say('運動完成'); }
   $('clock').textContent = s.remaining;
-  $('activity').textContent = s.done ? '完成！' : (s.phase && s.exercise === 1 ? '靜態深蹲' : names[s.exercise]);
+  $('activity').textContent = s.done ? '完成！' : (s.phase && s.exercise === 4 ? '繼續蹲著（靜態深蹲）' : names[s.exercise]);
   $('phase').textContent = s.done ? '課表完成' : phaseText(s);
   $('position').textContent = `第 ${s.exercise + 1} / 5 組 · 第 ${s.round + 1} / 4 輪`;
   $('total').textContent = `${Math.floor(s.totalRemaining / 60).toString().padStart(2, '0')}:${(s.totalRemaining % 60).toString().padStart(2, '0')}`;
@@ -87,7 +87,7 @@ $('jump').onclick = () => { cancelVoice(); timer.seek(Number($('exercise').value
 $('voice').onchange = () => { if (!$('voice').checked) cancelVoice(); };
 $('music').onchange = () => { if ($('music').checked && timer.running) unlockAudio(); };
 $('wake').onchange = () => { if ($('wake').checked) void acquireWake(); else { void releaseWake(); $('wakeStatus').textContent = '常亮已關閉'; } };
-$('saveNames').onclick = () => { for (let i = 2; i < 5; i++) names[i] = $(`name${i}`).value.trim() || `動作 ${i + 1}（未命名）`; refreshNames(); lastSegment = -1; render(); };
+$('saveNames').onclick = () => { for (let i = 0; i < 4; i++) names[i] = $(`name${i}`).value.trim() || `動作 ${i + 1}（未命名）`; refreshNames(); lastSegment = -1; render(); };
 document.addEventListener('visibilitychange', () => { if (document.hidden && timer.running) { stop('畫面離開前景，已自動暫停；返回後請按繼續'); render(); } });
 window.addEventListener('pagehide', () => { stop('頁面離開，已暫停'); });
 setInterval(() => { render(); rhythm(); }, 100);

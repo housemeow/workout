@@ -5,7 +5,7 @@
 </style></head><body>
 <main>
 <header><h1>HIIT / 20 分鐘</h1><small>需求重建版 · v1.0</small></header>
-<p class="notice">5 組 × 4 輪 · 運動 30 秒／休息 30 秒。動作清單為暫定，可於下方修改。</p>
+<p class="notice">5 組 × 4 輪 · 運動 30 秒／休息 30 秒。蛙跳 → 交互蹲跳 → 波比跳 → 伏地挺身 → 深蹲。</p>
 <section class="card timer">
 <div id="phase">準備開始</div><h2 id="activity">蛙跳</h2><div id="clock" role="timer" aria-label="本階段剩餘秒數">30</div>
 <p id="position">第 1 組 · 第 1 / 4 輪</p><progress id="progress" max="1200000" value="0" aria-label="整體進度"></progress>
@@ -17,8 +17,8 @@
 <div class="row selectors"><label>動作<select id="exercise"></select></label><label>輪次<select id="round"><option value="0">第 1 輪</option><option value="1">第 2 輪</option><option value="2">第 3 輪</option><option value="3">第 4 輪</option></select></label><label>階段<select id="segment"><option value="0">運動</option><option value="1">休息／靜態深蹲</option></select></label></div>
 <div class="row"><button id="previous">◀ 上一輪</button><button id="next">下一輪 ▶</button></div><button id="jump">切換至選定位置</button><p class="notice">切換後從該階段 30 秒開始；保留正在播放或暫停狀態。剩餘時間依課表位置重算。</p></section>
 <section class="card settings"><label><input id="voice" type="checkbox" checked>中文語音提示</label><label><input id="music" type="checkbox" checked>合成背景節奏（128 BPM）</label><label>節奏音量<input id="volume" type="range" min="0" max="100" value="35"></label><label><input id="wake" type="checkbox" checked>運動時嘗試保持螢幕開啟</label><p class="notice" id="audioStatus">音訊等待開始操作</p><p class="notice" id="wakeStatus" role="status">常亮尚未啟用；不能保證 iPhone ChatGPT 不鎖屏。</p>
-<details><summary>編輯暫定動作清單</summary><p class="notice">舊版截圖確認第一組蛙跳；深蹲順序暫列第二組。其餘名稱待原碼取回，可修改。本次修改不跨重新載入保存。</p><div id="names" class="settings"></div><button id="saveNames">套用名稱</button></details></section>
-<p class="notice">深蹲的休息階段改為「靜態深蹲」。切到背景會自動暫停，返回後請手動繼續。HTML 檔案預覽不等於可執行的 ChatGPT 互動環境。</p>
+<details><summary>編輯動作名稱</summary><p class="notice">前四組可修改顯示名稱；第五組固定為深蹲，休息時繼續蹲著。本次修改不跨重新載入保存。</p><div id="names" class="settings"></div><button id="saveNames">套用名稱</button></details></section>
+<p class="notice">深蹲的休息階段為「繼續蹲著（靜態深蹲）」。切到背景會自動暫停，返回後請手動繼續。HTML 檔案預覽不等於可執行的 ChatGPT 互動環境。</p>
 <noscript>此環境未啟用 JavaScript，計時器無法運作。請在可執行 JavaScript 的環境開啟。</noscript>
 </main>
 
@@ -55,7 +55,7 @@
 'use strict';
 const $ = id => document.getElementById(id);
 const timer = new HiitCore.Timer();
-const names = ['蛙跳', '深蹲', '動作 3（待取回）', '動作 4（待取回）', '動作 5（待取回）'];
+const names = ['蛙跳', '交互蹲跳', '波比跳', '伏地挺身', '深蹲'];
 let lastSegment = -1, lastCount = -1, context, beat = 0, nextBeat = 0;
 let wakeLock = null, wakePending = false, wakeEpoch = 0;
 const now = () => performance.now();
@@ -67,7 +67,7 @@ function refreshNames() {
 refreshNames();
 names.forEach((name, i) => {
   const label = document.createElement('label'); label.textContent = `第 ${i + 1} 組`;
-  const input = document.createElement('input'); input.type = 'text'; input.value = name; input.id = `name${i}`; input.maxLength = 32; input.disabled = i <= 1;
+  const input = document.createElement('input'); input.type = 'text'; input.value = name; input.id = `name${i}`; input.maxLength = 32; input.disabled = i === 4;
   label.append(input); $('names').append(label);
 });
 function say(text) {
@@ -113,7 +113,7 @@ async function acquireWake() {
   } catch (e) { $('wakeStatus').textContent = `常亮未取得（${e.name || 'Error'}）；計時照常運作`; }
   finally { wakePending = false; if (epoch !== wakeEpoch && timer.running && $('wake').checked && !document.hidden) void acquireWake(); }
 }
-function phaseText(s) { return s.phase ? (s.exercise === 1 ? '靜態深蹲' : '休息') : '運動'; }
+function phaseText(s) { return s.phase ? (s.exercise === 4 ? '繼續蹲著（靜態深蹲）' : '休息') : '運動'; }
 function stop(message) {
   timer.pause(now()); cancelVoice(); void releaseWake();
   $('wakeStatus').textContent = '常亮已停止'; $('status').textContent = message;
@@ -122,7 +122,7 @@ function render() {
   const s = timer.snapshot(now());
   if (s.done && timer.running) { stop('20 分鐘課表完成'); say('運動完成'); }
   $('clock').textContent = s.remaining;
-  $('activity').textContent = s.done ? '完成！' : (s.phase && s.exercise === 1 ? '靜態深蹲' : names[s.exercise]);
+  $('activity').textContent = s.done ? '完成！' : (s.phase && s.exercise === 4 ? '繼續蹲著（靜態深蹲）' : names[s.exercise]);
   $('phase').textContent = s.done ? '課表完成' : phaseText(s);
   $('position').textContent = `第 ${s.exercise + 1} / 5 組 · 第 ${s.round + 1} / 4 輪`;
   $('total').textContent = `${Math.floor(s.totalRemaining / 60).toString().padStart(2, '0')}:${(s.totalRemaining % 60).toString().padStart(2, '0')}`;
@@ -140,7 +140,7 @@ $('jump').onclick = () => { cancelVoice(); timer.seek(Number($('exercise').value
 $('voice').onchange = () => { if (!$('voice').checked) cancelVoice(); };
 $('music').onchange = () => { if ($('music').checked && timer.running) unlockAudio(); };
 $('wake').onchange = () => { if ($('wake').checked) void acquireWake(); else { void releaseWake(); $('wakeStatus').textContent = '常亮已關閉'; } };
-$('saveNames').onclick = () => { for (let i = 2; i < 5; i++) names[i] = $(`name${i}`).value.trim() || `動作 ${i + 1}（未命名）`; refreshNames(); lastSegment = -1; render(); };
+$('saveNames').onclick = () => { for (let i = 0; i < 4; i++) names[i] = $(`name${i}`).value.trim() || `動作 ${i + 1}（未命名）`; refreshNames(); lastSegment = -1; render(); };
 document.addEventListener('visibilitychange', () => { if (document.hidden && timer.running) { stop('畫面離開前景，已自動暫停；返回後請按繼續'); render(); } });
 window.addEventListener('pagehide', () => { stop('頁面離開，已暫停'); });
 setInterval(() => { render(); rhythm(); }, 100);

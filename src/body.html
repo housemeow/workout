@@ -1,6 +1,6 @@
 <main>
 <header><h1>HIIT / 20 分鐘</h1><small>需求重建版 · v1.0</small></header>
-<p class="notice">5 組 × 4 輪 · 運動 30 秒／休息 30 秒。動作清單為暫定，可於下方修改。</p>
+<p class="notice">5 組 × 4 輪 · 運動 30 秒／休息 30 秒。蛙跳 → 交互蹲跳 → 波比跳 → 伏地挺身 → 深蹲。</p>
 <section class="card timer">
 <div id="phase">準備開始</div><h2 id="activity">蛙跳</h2><div id="clock" role="timer" aria-label="本階段剩餘秒數">30</div>
 <p id="position">第 1 組 · 第 1 / 4 輪</p><progress id="progress" max="1200000" value="0" aria-label="整體進度"></progress>
@@ -12,7 +12,7 @@
 <div class="row selectors"><label>動作<select id="exercise"></select></label><label>輪次<select id="round"><option value="0">第 1 輪</option><option value="1">第 2 輪</option><option value="2">第 3 輪</option><option value="3">第 4 輪</option></select></label><label>階段<select id="segment"><option value="0">運動</option><option value="1">休息／靜態深蹲</option></select></label></div>
 <div class="row"><button id="previous">◀ 上一輪</button><button id="next">下一輪 ▶</button></div><button id="jump">切換至選定位置</button><p class="notice">切換後從該階段 30 秒開始；保留正在播放或暫停狀態。剩餘時間依課表位置重算。</p></section>
 <section class="card settings"><label><input id="voice" type="checkbox" checked>中文語音提示</label><label><input id="music" type="checkbox" checked>合成背景節奏（128 BPM）</label><label>節奏音量<input id="volume" type="range" min="0" max="100" value="35"></label><label><input id="wake" type="checkbox" checked>運動時嘗試保持螢幕開啟</label><p class="notice" id="audioStatus">音訊等待開始操作</p><p class="notice" id="wakeStatus" role="status">常亮尚未啟用；不能保證 iPhone ChatGPT 不鎖屏。</p>
-<details><summary>編輯暫定動作清單</summary><p class="notice">舊版截圖確認第一組蛙跳；深蹲順序暫列第二組。其餘名稱待原碼取回，可修改。本次修改不跨重新載入保存。</p><div id="names" class="settings"></div><button id="saveNames">套用名稱</button></details></section>
-<p class="notice">深蹲的休息階段改為「靜態深蹲」。切到背景會自動暫停，返回後請手動繼續。HTML 檔案預覽不等於可執行的 ChatGPT 互動環境。</p>
+<details><summary>編輯動作名稱</summary><p class="notice">前四組可修改顯示名稱；第五組固定為深蹲，休息時繼續蹲著。本次修改不跨重新載入保存。</p><div id="names" class="settings"></div><button id="saveNames">套用名稱</button></details></section>
+<p class="notice">深蹲的休息階段為「繼續蹲著（靜態深蹲）」。切到背景會自動暫停，返回後請手動繼續。HTML 檔案預覽不等於可執行的 ChatGPT 互動環境。</p>
 <noscript>此環境未啟用 JavaScript，計時器無法運作。請在可執行 JavaScript 的環境開啟。</noscript>
 </main>
